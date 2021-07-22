@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "shadow-cljs": "^2.11.23"
+  },
+  "dependencies": {
+    "ethers": "^5.4.1"
+  }
+}
