@@ -1,17 +1,24 @@
 (ns simple-wallet.core
-  (:require 
-   [simple-wallet.wallet :as wallet]))
+  (:require
+   [reagent.dom :as dom]
+   [simple-wallet.subs]
+   [simple-wallet.events]
+   [simple-wallet.views :as views]))
+
+(defn ^:export render []
+  (dom/render [views/wallet]
+              (js/document.getElementById "app")))
 
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
-  (js/console.log "start"))
+  (js/console.log "start")
+  (render))
 
 (defn init []
   ;; init is called ONCE when the page loads
   ;; this is called in the index.html and must be exported
   ;; so it is available even in :advanced release builds
   (js/console.log "init")
-  (wallet/init)
   (start))
 
 ;; this is called before any code is reloaded
