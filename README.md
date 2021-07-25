@@ -15,3 +15,7 @@ yarn shadow-cljs watch app
 ```txt
 yarn shadow-cljs release app
 ```
+
+```txt
+firebase deploy --only hosting
+```
