@@ -36,18 +36,22 @@
            contract (Contract. dai/address dai/abi provider)
            balance (<p! (ocall contract :balanceOf account))
            signer (ocall provider :getSigner)
+           ;; filtering events with our account
            filter-to (-> (oget contract :filters)
                          (ocall :Transfer nil account))
            filter-from (-> (oget contract :filters)
                            (ocall :Transfer account nil))]
        (ocall contract :on filter-to #(dispatch [:update-balance %]))
        (ocall contract :on filter-from #(dispatch [:update-balance %]))
+       ;; saving initial data to the state
        (dispatch [:merge {:account account
                           :contract contract
                           :signer signer
                           :balance (u/format balance)}])))
    db))
 
+
+;; updates balance on 'Transfer' event
 (reg-event-db
  :update-balance
  (fn [{:keys [contract account] :as db} _]
@@ -56,6 +60,8 @@
        (dispatch [:merge {:balance (u/format balance)}])))
    db))
 
+
+;; transfer DAI to another account
 (reg-event-db
  :transfer
  (fn [{:keys [contract signer target amount] :as db} _]
@@ -64,6 +70,7 @@
      (ocall contract-with-signer :transfer target amount))
    db))
 
+;; mints 10 DAI
 (reg-event-db
  :mint
  (fn [{:keys [contract signer account] :as db} _]
