@@ -29,3 +29,8 @@ body {
   background-color: #eee;
   padding: 15px;
 }
+
+.with-padding {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}

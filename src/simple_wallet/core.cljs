@@ -1,6 +1,7 @@
 (ns simple-wallet.core
   (:require
    [reagent.dom :as dom]
+   [re-frame.core :refer [dispatch dispatch-sync]]
    [simple-wallet.subs]
    [simple-wallet.events]
    [simple-wallet.views :as views]))
@@ -12,6 +13,8 @@
 ;; start is called by init and after code reloading finishes
 (defn ^:dev/after-load start []
   (js/console.log "start")
+  (dispatch-sync [:initialise-db])
+  (dispatch [:init-wallet])
   (render))
 
 (defn init []

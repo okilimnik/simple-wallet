@@ -5,11 +5,17 @@
    [oops.core :refer [ocall oget]]
    [cljs.core.async :refer [go]]
    [cljs.core.async.interop :refer-macros [<p!]]
-   [simple-wallet.dai :as dai]))
+   [simple-wallet.dai :as dai]
+   [simple-wallet.db :as app-db]))
+
+(reg-event-db
+ :initialise-db
+ (fn [_ _]
+   app-db/db))
 
 (reg-event-db
  :write-to
- (fn [db [_ path value]]
+ (fn [db [_ [path value]]]
    (assoc-in db path value)))
 
 (reg-event-db
@@ -42,6 +48,8 @@
    (let [contract-with-signer (ocall contract :connect signer)
          amount (-> (oget ethers :utils)
                     (ocall :parseUnits amount 18))]
+     (println "target: " target)
+     (println "amount: " amount)
      (ocall contract-with-signer :transfer target amount))
    db))
 
