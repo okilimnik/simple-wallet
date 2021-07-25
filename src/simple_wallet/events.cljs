@@ -6,7 +6,8 @@
    [cljs.core.async :refer [go]]
    [cljs.core.async.interop :refer-macros [<p!]]
    [simple-wallet.dai :as dai]
-   [simple-wallet.db :as app-db]))
+   [simple-wallet.db :as app-db]
+   [simple-wallet.utils :as u]))
 
 (reg-event-db
  :initialise-db
@@ -34,22 +35,32 @@
            Contract (oget ethers "Contract")
            contract (Contract. dai/address dai/abi provider)
            balance (<p! (ocall contract :balanceOf account))
-           signer (ocall provider :getSigner)]
+           signer (ocall provider :getSigner)
+           filter-to (-> (oget contract :filters)
+                         (ocall :Transfer nil account))
+           filter-from (-> (oget contract :filters)
+                           (ocall :Transfer account nil))]
+       (ocall contract :on filter-to #(dispatch [:update-balance %]))
+       (ocall contract :on filter-from #(dispatch [:update-balance %]))
        (dispatch [:merge {:account account
                           :contract contract
                           :signer signer
-                          :balance (-> (oget ethers :utils)
-                                       (ocall :formatUnits balance 18))}])))
+                          :balance (u/format balance)}])))
+   db))
+
+(reg-event-db
+ :update-balance
+ (fn [{:keys [contract account] :as db} _]
+   (go
+     (let [balance (<p! (ocall contract :balanceOf account))]
+       (dispatch [:merge {:balance (u/format balance)}])))
    db))
 
 (reg-event-db
  :transfer
  (fn [{:keys [contract signer target amount] :as db} _]
    (let [contract-with-signer (ocall contract :connect signer)
-         amount (-> (oget ethers :utils)
-                    (ocall :parseUnits amount 18))]
-     (println "target: " target)
-     (println "amount: " amount)
+         amount (u/parse amount)]
      (ocall contract-with-signer :transfer target amount))
    db))
 
@@ -57,7 +68,6 @@
  :mint
  (fn [{:keys [contract signer account] :as db} _]
    (let [contract-with-signer (ocall contract :connect signer)
-         amount (-> (oget ethers :utils)
-                    (ocall :parseUnits "10.0" 18))]
+         amount (u/parse "10")]
      (ocall contract-with-signer :mint account amount))
    db))
