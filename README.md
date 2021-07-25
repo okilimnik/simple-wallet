@@ -19,3 +19,5 @@ yarn shadow-cljs release app
 ```txt
 firebase deploy --only hosting
 ```
+
+Project url: https://case-study-2bb30.web.app/
